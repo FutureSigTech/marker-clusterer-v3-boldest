@@ -81,6 +81,13 @@ function MarkerClusterer(map, opt_markers, opt_options) {
 
   this.sizes = [53, 56, 66, 78, 90];
 
+
+  /**
+   *  @type {Array.<Cluster>}
+   */
+  this.clustersToRemove = [];
+
+
   /**
    * @private
    */
@@ -120,6 +127,7 @@ function MarkerClusterer(map, opt_markers, opt_options) {
    */
   this.imagePath_ = options['imagePath'] ||
       this.MARKER_CLUSTER_IMAGE_PATH_;
+
 
   /**
    * @type {string}
@@ -666,10 +674,14 @@ MarkerClusterer.prototype.clearMarkers = function() {
  * @param {boolean} opt_hide To also hide the marker.
  */
 MarkerClusterer.prototype.resetViewport = function(opt_hide) {
+
+
   // Remove all the clusters
   for (var i = 0, cluster; cluster = this.clusters_[i]; i++) {
-    cluster.remove();
+    this.clustersToRemove.push( cluster ); //cluster.remove();
   }
+
+
 
   // Reset the markers to not be added and to be invisible.
   for (var i = 0, marker; marker = this.markers_[i]; i++) {
@@ -772,21 +784,54 @@ MarkerClusterer.prototype.addToClosestCluster_ = function(marker) {
  * @private
  */
 MarkerClusterer.prototype.createClusters_ = function() {
+
   if (!this.ready_) {
     return;
   }
 
   // Get our current map view bounds.
   // Create a new bounds object so we don't affect the map.
-  var mapBounds = new google.maps.LatLngBounds(this.map_.getBounds().getSouthWest(),
-      this.map_.getBounds().getNorthEast());
-  var bounds = this.getExtendedBounds(mapBounds);
+
+  var projection = this.getProjection();
+
+  var sw = this.map_.getBounds().getSouthWest();
+  var ne = this.map_.getBounds().getNorthEast();
+
+
+  var margin_buffer = -150;
+
+
+  var swP = new google.maps.Point( projection.fromLatLngToDivPixel(sw ).x + margin_buffer , projection.fromLatLngToDivPixel(sw ).y - margin_buffer );
+  var neP = new google.maps.Point( projection.fromLatLngToDivPixel(ne ).x - margin_buffer , projection.fromLatLngToDivPixel(ne ).y + margin_buffer );
+
+//console.log(projection)
+  sw = projection.fromDivPixelToLatLng( swP );
+  ne = projection.fromDivPixelToLatLng( neP );
+
+
+
+  var mapBounds = new google.maps.LatLngBounds( sw, ne );
+
+
+
+  var bounds = this.getExtendedBounds( mapBounds );
+
+
 
   for (var i = 0, marker; marker = this.markers_[i]; i++) {
     if (!marker.isAdded && this.isMarkerInBounds_(marker, bounds)) {
       this.addToClosestCluster_(marker);
     }
   }
+
+
+  // remove old clusters
+  while( this.clustersToRemove.length ){
+    cluster = this.clustersToRemove.pop();
+    cluster.remove();
+    //console.log(cluster)
+  }
+
 };
 
 
