@@ -1,4 +1,4 @@
-Marker Clusterer – A Modified Google Maps JavaScript API utility library
+Marker Clusterer – A Google Maps JavaScript API utility library
 ==============
 
 A Google Maps JavaScript API v3 library to create nam
