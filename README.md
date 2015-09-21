@@ -1,7 +1,8 @@
 Marker Clusterer – A Modified Google Maps JavaScript API utility library
 ==============
 
-A Google Maps JavaScript API v3 library to create and manage per-zoom-level clusters for large amounts of markers.
+A Google Maps JavaScript API v3 library to create nam
+d manage per-zoom-level clusters for large amounts of markers.
 
 
 Migrated from Google original js-marker-clusterer library
