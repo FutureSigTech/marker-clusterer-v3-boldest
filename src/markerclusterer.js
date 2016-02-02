@@ -166,6 +166,7 @@ function MarkerClusterer(map, opt_markers, opt_options) {
    */
   this.prevZoom_ = this.map_.getZoom();
 
+
   // Add the map event listeners
   var that = this;
   google.maps.event.addListener(this.map_, 'zoom_changed', function() {
@@ -339,6 +340,32 @@ MarkerClusterer.prototype.getTotalMarkers = function() {
  */
 MarkerClusterer.prototype.setMaxZoom = function(maxZoom) {
   this.maxZoom_ = maxZoom;
+};
+
+this.mouseoverCallback_ = false;
+this.mouseoutCallback_ = false;
+
+
+MarkerClusterer.prototype.setMouseover = function( mouseoverCallback ) {
+
+  this.mouseoverCallback_ = mouseoverCallback;
+};
+
+MarkerClusterer.prototype.getMouseover = function( mouseoverMarkers ) {
+  if( this.mouseoverCallback_ ) {
+    this.mouseoverCallback_( mouseoverMarkers );
+  }
+};
+
+MarkerClusterer.prototype.setMouseout = function( mouseoutCallback ) {
+
+  this.mouseoutCallback_ = mouseoutCallback;
+};
+
+MarkerClusterer.prototype.getMouseout = function(  mouseoutCallback ) {
+  if( this.mouseoutCallback_ ) {
+    this.mouseoutCallback_( mouseoutCallback );
+  }
 };
 
 
@@ -854,6 +881,7 @@ function Cluster(markerClusterer) {
   this.bounds_ = null;
   this.clusterIcon_ = new ClusterIcon(this, markerClusterer.getStyles(),
       markerClusterer.getGridSize());
+
 }
 
 /**
@@ -1092,11 +1120,13 @@ ClusterIcon.prototype.triggerClusterClick = function() {
 
   // Trigger the clusterclick event.
   google.maps.event.trigger(markerClusterer, 'clusterclick', this.cluster_);
+  //console.log(markerClusterer)
 
   if (markerClusterer.isZoomOnClick()) {
     // Zoom into the cluster.
     this.map_.fitBounds(this.cluster_.getBounds());
   }
+
 };
 
 
@@ -1105,6 +1135,9 @@ ClusterIcon.prototype.triggerClusterClick = function() {
  * @ignore
  */
 ClusterIcon.prototype.onAdd = function() {
+  var that = this;
+
+
   this.div_ = document.createElement('DIV');
   if (this.visible_) {
     var pos = this.getPosFromLatLng_(this.center_);
@@ -1114,10 +1147,35 @@ ClusterIcon.prototype.onAdd = function() {
 
   var panes = this.getPanes();
   panes.overlayMouseTarget.appendChild(this.div_);
+//  console.log('lol')
 
   var that = this;
   google.maps.event.addDomListener(this.div_, 'click', function() {
     that.triggerClusterClick();
+  });
+
+  google.maps.event.addDomListener(this.div_, 'mouseover', function() {
+
+
+    var markersToReturn = [];
+
+    $.each( that.cluster_.markers_, function(i,e) {
+      markersToReturn.push(e);
+    });
+
+    that.cluster_.markerClusterer_.getMouseover( markersToReturn );
+  });
+
+  google.maps.event.addDomListener(this.div_, 'mouseout', function() {
+
+
+    var markersToReturn = [];
+
+    $.each( that.cluster_.markers_, function(i,e) {
+      markersToReturn.push(e);
+    });
+
+    that.cluster_.markerClusterer_.getMouseout( markersToReturn );
   });
 };
 
