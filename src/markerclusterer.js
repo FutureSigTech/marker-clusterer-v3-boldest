@@ -107,6 +107,8 @@ function MarkerClusterer(map, opt_markers, opt_options) {
    */
   this.gridSize_ = options['gridSize'] || 60;
 
+  MarkerClusterer.isTouchDevice = options['isTouchDevice'] || false;
+
   /**
    * @private
    */
@@ -1126,7 +1128,6 @@ ClusterIcon.prototype.triggerClusterClick = function() {
     // Zoom into the cluster.
     this.map_.fitBounds(this.cluster_.getBounds());
   }
-
 };
 
 
@@ -1151,12 +1152,23 @@ ClusterIcon.prototype.onAdd = function() {
 
   var that = this;
   google.maps.event.addDomListener(this.div_, 'click', function() {
-    that.triggerClusterClick();
+
+    if(  MarkerClusterer.isTouchDevice ) {
+
+      var markersToReturn = [];
+
+      $.each( that.cluster_.markers_, function(i,e) {
+        markersToReturn.push(e);
+      });
+
+      that.cluster_.markerClusterer_.getMouseover( markersToReturn );
+    }
+    else {
+      that.triggerClusterClick();
+    }
   });
 
   google.maps.event.addDomListener(this.div_, 'mouseover', function() {
-
-
     var markersToReturn = [];
 
     $.each( that.cluster_.markers_, function(i,e) {
