@@ -1,0 +1,10 @@
+{
+  "name": "marker-clusterer-v3-innoto",
+  "version": "1.0.0",
+  "description": "The library, creates and manages per-zoom-level clusters for large amounts of markers. Google API v3.",
+  "main": "src/markerclusterer.js",
+  "repository": "https://github.com/Innoto/marker-clusterer-v3-innoto.git",
+  "author": "Luke Mahe - Pablo Blanco (Innoto SL)",
+  "license": "Apache 2.0",
+  "keywords": [ "google", "Innoto", "marker", "cluster", "clusterer", "javascript", "js", "api", "v3" ]
+}
