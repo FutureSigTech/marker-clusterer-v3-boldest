@@ -1,10 +1,20 @@
 {
   "name": "marker-clusterer-v3-boldest",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "The library, creates and manages per-zoom-level clusters for large amounts of markers. Google API v3.",
   "main": "src/markerclusterer.js",
   "repository": "https://github.com/FutureSigTech/marker-clusterer-v3-boldest/",
   "author": "Luke Mahe - Changes by Boldest.io",
   "license": "Apache 2.0",
-  "keywords": [ "google", "Innoto", "marker", "cluster", "clusterer", "javascript", "js", "api", "v3" ]
+  "keywords": [
+    "google",
+    "Innoto",
+    "marker",
+    "cluster",
+    "clusterer",
+    "javascript",
+    "js",
+    "api",
+    "v3"
+  ]
 }
