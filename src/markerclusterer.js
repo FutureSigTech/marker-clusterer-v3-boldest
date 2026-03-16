@@ -87,6 +87,12 @@ function MarkerClusterer(map, opt_markers, opt_options) {
    */
   this.clustersToRemove = [];
 
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.isClearing_ = false;
+
 
   /**
    * @private
@@ -181,7 +187,9 @@ function MarkerClusterer(map, opt_markers, opt_options) {
   });
 
   google.maps.event.addListener(this.map_, 'idle', function() {
-    that.redraw();
+    if (!that.isClearing_) {
+      that.redraw();
+    }
   });
 
   // Finally, add the markers
@@ -691,10 +699,34 @@ MarkerClusterer.prototype.isMarkerInBounds_ = function(marker, bounds) {
  * Clears all clusters and markers from the clusterer.
  */
 MarkerClusterer.prototype.clearMarkers = function() {
-  this.resetViewport(true);
 
-  // Set the markers a empty array.
+  this.isClearing_ = true;
+
+  // Remove all cluster divs
+  var clusterDivs = document.querySelectorAll('.cluster-marker-icon');
+  for (var i = clusterDivs.length - 1; i >= 0; i--) {
+    var div = clusterDivs[i];
+    if (div.parentNode) {
+      div.parentNode.removeChild(div);
+    }
+  }
+
+  // Remove all clusters
+  for (var i = 0, cluster; cluster = this.clusters_[i]; i++) {
+    cluster.remove();
+  }
+  this.clusters_ = [];
+  this.clustersToRemove = [];
+
+  for (var i = 0, marker; marker = this.markers_[i]; i++) {
+    marker.isAdded = false;
+    marker.setMap(null);
+  }
+
+  // Set the markers to empty array.
   this.markers_ = [];
+
+  this.isClearing_ = false;
 };
 
 
@@ -704,13 +736,21 @@ MarkerClusterer.prototype.clearMarkers = function() {
  */
 MarkerClusterer.prototype.resetViewport = function(opt_hide) {
 
-
-  // Remove all the clusters
+  // Remove all the clusters immediately
   for (var i = 0, cluster; cluster = this.clusters_[i]; i++) {
-    this.clustersToRemove.push( cluster ); //cluster.remove();
+    cluster.remove();
   }
+  this.clusters_ = [];
+  this.clustersToRemove = [];
 
-
+  // seek and destroy by class name
+  var clusterDivs = document.querySelectorAll('.cluster-marker-icon');
+  for (var i = clusterDivs.length - 1; i >= 0; i--) {
+    var div = clusterDivs[i];
+    if (div.parentNode) {
+      div.parentNode.removeChild(div);
+    }
+  }
 
   // Reset the markers to not be added and to be invisible.
   for (var i = 0, marker; marker = this.markers_[i]; i++) {
@@ -719,8 +759,6 @@ MarkerClusterer.prototype.resetViewport = function(opt_hide) {
       marker.setMap(null);
     }
   }
-
-  this.clusters_ = [];
 };
 
 /**
@@ -851,14 +889,6 @@ MarkerClusterer.prototype.createClusters_ = function() {
     if (!marker.isAdded && this.isMarkerInBounds_(marker, bounds)) {
       this.addToClosestCluster_(marker);
     }
-  }
-
-
-  // remove old clusters
-  while( this.clustersToRemove.length ){
-    cluster = this.clustersToRemove.pop();
-    cluster.remove();
-    //console.log(cluster)
   }
 
 };
@@ -1136,10 +1166,15 @@ ClusterIcon.prototype.triggerClusterClick = function() {
  * @ignore
  */
 ClusterIcon.prototype.onAdd = function() {
+  if (this.removed_) {
+    return;
+  }
+
   var that = this;
 
 
   this.div_ = document.createElement('DIV');
+  this.div_.className = 'cluster-marker-icon';
   if (this.visible_) {
     var pos = this.getPosFromLatLng_(this.center_);
     this.div_.style.cssText = this.createCss(pos);
@@ -1248,6 +1283,12 @@ ClusterIcon.prototype.show = function() {
  * Remove the icon from the map
  */
 ClusterIcon.prototype.remove = function() {
+  this.removed_ = true;
+  if (this.div_ && this.div_.parentNode) {
+    this.div_.parentNode.removeChild(this.div_);
+    this.div_ = null;
+  }
+  this.visible_ = false;
   this.setMap(null);
 };
 
