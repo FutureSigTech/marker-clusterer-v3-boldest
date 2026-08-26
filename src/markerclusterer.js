@@ -894,7 +894,7 @@ MarkerClusterer.prototype.createClusters_ = function() {
   // Remove orphaned divs (created by asynchronous onAdd after remove)
   var activeDivs = this.activeClusterDivs_;
   var currentClusters = this.clusters_;
-  setTimeout(function() {
+  var purgeOrphanDivs = function() {
     activeDivs.forEach(function(div) {
       // Check if this div belongs to any current cluster
       var isActive = false;
@@ -909,7 +909,12 @@ MarkerClusterer.prototype.createClusters_ = function() {
         activeDivs.delete(div);
       }
     });
-  }, 30);
+  };
+  // A single 30ms pass can miss divs whose async onAdd() fires later (e.g. slow embedded pages),
+  // so retry a couple more times to catch stragglers without waiting for the next map interaction.
+  setTimeout(purgeOrphanDivs, 30);
+  setTimeout(purgeOrphanDivs, 80);
+  setTimeout(purgeOrphanDivs, 200);
 
 };
 
